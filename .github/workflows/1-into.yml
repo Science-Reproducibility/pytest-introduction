@@ -1,4 +1,4 @@
-name: Step 1, TBD-step-1-name
+name: Week 1
 
 # This step triggers after TBD-step-1-event-desc.
 # This workflow updates from step 1 to step 2.
@@ -7,8 +7,12 @@ name: Step 1, TBD-step-1-name
 # Reference: https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows
 on:
   workflow_dispatch:
-  # Add events that trigger this workflow.
-  # TBD-step-1-event:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 # Reference: https://docs.github.com/en/actions/security-guides/automatic-token-authentication
 permissions:
@@ -30,8 +34,8 @@ jobs:
     outputs:
       current_step: ${{ steps.get_step.outputs.current_step }}
 
-  on_TBD-step-1-event:
-    name: On TBD-step-1-event
+  check_results:
+    name: Check results
     needs: get_current_step
 
     # We will only run this action when:
@@ -47,19 +51,69 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Let's get all the branches.
+
+      - name: Check the file # todo: add more test
+        uses: skills/action-check-file@v1
+        with:
+          file: "week1/prime_factors.py"
+          search: "18"
+
+  update_to_week2:
+    name: Update to week 2
+    needs: [get_current_step, check_results]
+    if: >-
+      ${{ !github.event.repository.is_template
+          && needs.get_current_step.outputs.current_step == 1 
+          && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+
+    runs-on: ubuntu-latest
+
+    steps:
       # We'll need to check out the repository so that we can edit the README.
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Let's get all the branches.
 
-      # TBD-step-1-additional-steps
-
       # In README.md, switch step 1 for step 2.
-      - name: Update to step 2
+      - name: Update to week 2
         uses: skills/action-update-step@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           from_step: 1
           to_step: 2
-          branch_name: tbd-branch-name
+          #branch_name: step1
+
+      # In README.md, switch step 1 for step 2.
+      - name: Update to week 2
+        uses: skills/action-update-step@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          from_step: 1
+          to_step: 2
+          #branch_name: step1
+
+      - name: Create a new branch
+        run: | 
+          echo "Make a branch"
+          BRANCH=week2
+          git checkout -b $BRANCH 
+          # copy the current README.md to week1
+          cp .github/steps/1-intro.md week1/README.md
+          git add week1/README.md      
+          cp -r .github/working_dir/week2 .
+          git config user.name github-actions[bot]
+          git config user.email github-actions[bot]@users.noreply.github.com
+          git add week2/*
+          git commit -m "Add step working directory for step 2"
+          git push origin $BRANCH
+          echo "Push"
+          git push --set-upstream origin $BRANCH
+          echo "Restore main"
+          git checkout main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
