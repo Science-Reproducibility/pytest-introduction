@@ -56,11 +56,14 @@ jobs:
         with:
           fetch-depth: 0 # Let's get all the branches.
 
-      - name: Check the file # todo: add more test
+      - name: Check the file
         uses: skills/action-check-file@v1
         with:
           file: "week1/prime_factors.py"
           search: "18"
+
+      - name: Run the python script
+        run: python week1/prime_factors.py
 
   update_to_week2:
     name: Update to week 2
@@ -79,24 +82,14 @@ jobs:
         with:
           fetch-depth: 0 # Let's get all the branches.
 
-      # In README.md, switch step 1 for step 2.
+       # In README.md, switch step 1 for step 2.
       - name: Update to week 2
         uses: skills/action-update-step@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           from_step: 1
           to_step: 2
-          #branch_name: step1
-
-      # In README.md, switch step 1 for step 2.
-      - name: Update to week 2
-        uses: skills/action-update-step@v2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          from_step: 1
-          to_step: 2
-          #branch_name: step1
-
+     
       - name: Create a new branch
         run: | 
           echo "Make a branch"
