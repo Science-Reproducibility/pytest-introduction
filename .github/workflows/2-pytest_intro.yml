@@ -57,7 +57,15 @@ jobs:
         with:
           fetch-depth: 0 # Let's get all the branches.
 
-# TODO: adding steps
+      - name: Check the file
+        uses: skills/action-check-file@v1
+        with:
+          file: "week2/test_prime_factors.py"
+          search: "mark.parametrize"
+
+      - name: Run the pytest
+        run: python week2/test_prime_factors.py
+
 
   update_to_week3:
     name: Update to week 3
